@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel · Cabañas & Apart Ruta 63</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,700;0,800;1,500&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bosque:#1E3329; --madera:#7A4E30; --liquen:#B8A24A;
+  --bg:#F2ECE1; --paper:#FAF6EF; --ink:#2A2420; --muted:#6B5F55; --line:#DDD2C1;
+  --serif:"Alegreya", Georgia, serif; --sans:"Alegreya Sans","Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.6 var(--sans);min-height:100vh}
+h1,h2{font-family:var(--serif);margin:0 0 .3rem}
+.topbar{background:var(--bosque);color:#F2ECE1;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.topbar h1{font-size:1.3rem;color:#fff}
+.topbar a,.topbar button{color:#E9E1D3;background:none;border:1px solid #4E6A5C;border-radius:6px;padding:.4rem .9rem;font:700 .9rem var(--sans);cursor:pointer}
+.wrap{max-width:900px;margin:0 auto;padding:2rem 1.25rem}
+.card{background:var(--paper);border:1px solid var(--line);border-top:5px solid var(--madera);border-radius:6px;padding:1.6rem;margin-bottom:1.6rem}
+label{display:block;font-weight:700;font-size:.9rem;margin-bottom:.3rem}
+input{font:inherit;padding:.65rem .8rem;border:1px solid var(--line);border-radius:5px;width:100%;background:#fff}
+.btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--liquen);color:#221D10;border:0;border-radius:6px;padding:.7rem 1.2rem;font:700 .95rem var(--sans);cursor:pointer}
+.btn:hover{filter:brightness(1.06)}
+.btn[disabled]{opacity:.6;cursor:not-allowed}
+.err{color:#A3402A;font-weight:700;margin-top:.7rem;min-height:1.2em}
+.ok{color:#2F6E3E;font-weight:700;margin-top:.7rem;min-height:1.2em}
+
+/* login */
+#loginView{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:1.5rem}
+.login-card{background:var(--paper);border:1px solid var(--line);border-top:6px solid var(--madera);border-radius:8px;padding:2rem;width:min(360px,100%)}
+.login-card h1{font-size:1.6rem;margin-bottom:.2rem}
+.login-card p{color:var(--muted);margin:0 0 1.3rem}
+.login-card label{margin-top:1rem}
+
+/* tabla de precios */
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:.55rem .4rem;border-bottom:1px solid var(--line)}
+th{font-size:.82rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+td input{max-width:110px}
+
+/* stats */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:1rem;text-align:center}
+.stat b{display:block;font-family:var(--serif);font-size:1.8rem;color:var(--madera)}
+.stat span{font-size:.8rem;color:var(--muted)}
+.ev-list{list-style:none;margin:0;padding:0;font-size:.85rem}
+.ev-list li{padding:.4rem 0;border-bottom:1px dashed var(--line);display:flex;gap:.6rem;color:var(--muted)}
+.ev-list b{color:var(--ink);font-weight:700}
+.hidden{display:none !important}
+.loading{color:var(--muted);font-style:italic}
+</style>
+</head>
+<body>
+
+<div id="loginView">
+  <form class="login-card" id="loginForm">
+    <h1>Panel de administración</h1>
+    <p>Cabañas &amp; Apart Ruta 63</p>
+    <label>Usuario<input name="usuario" autocomplete="username" required></label>
+    <label>Contraseña<input name="clave" type="password" autocomplete="current-password" required></label>
+    <p class="err" id="loginErr"></p>
+    <button class="btn" type="submit" style="width:100%;justify-content:center;margin-top:.5rem">Entrar</button>
+  </form>
+</div>
+
+<div id="panelView" class="hidden">
+  <div class="topbar">
+    <h1>Panel · Ruta 63</h1>
+    <button id="logoutBtn" type="button">Cerrar sesión</button>
+  </div>
+  <div class="wrap">
+
+    <div class="card">
+      <h2>Precios</h2>
+      <p style="color:var(--muted);margin-top:0">En dólares por noche. Se guardan directo en la planilla de Google Sheets.</p>
+      <div id="preciosLoading" class="loading">Cargando precios…</div>
+      <table id="preciosTable" class="hidden">
+        <thead><tr><th>Unidad</th><th>Precio (USD)</th></tr></thead>
+        <tbody id="preciosBody"></tbody>
+      </table>
+      <button class="btn" id="guardarPrecios" type="button" style="margin-top:1.1rem" disabled>Guardar precios</button>
+      <p class="ok" id="preciosOk"></p>
+      <p class="err" id="preciosErr"></p>
+    </div>
+
+    <div class="card">
+      <h2>Códigos de descuento</h2>
+      <p style="color:var(--muted);margin-top:0">
+        Próximamente. Como la reserva final se confirma en el sistema de Wix (no en este sitio), un código
+        acá no se puede aplicar solo del otro lado — se va a sumar más adelante como una validación que el
+        visitante ve en pantalla y que vos aplicás a mano al confirmar la reserva en Wix.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Estadísticas</h2>
+      <div id="statsLoading" class="loading">Cargando estadísticas…</div>
+      <div id="statsContent" class="hidden">
+        <div class="stat-grid">
+          <div class="stat"><b id="s_visitas_total">—</b><span>Visitas totales</span></div>
+          <div class="stat"><b id="s_visitas_30d">—</b><span>Visitas (30 días)</span></div>
+          <div class="stat"><b id="s_consultas_cabana_total">—</b><span>Consultas cabañas</span></div>
+          <div class="stat"><b id="s_consultas_coworking_total">—</b><span>Consultas coworking</span></div>
+        </div>
+        <h2 style="font-size:1.1rem">Últimos eventos</h2>
+        <ul class="ev-list" id="eventList"></ul>
+      </div>
+      <p class="err" id="statsErr"></p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var loginView=document.getElementById('loginView'), panelView=document.getElementById('panelView');
+
+  function mostrarPanel(){
+    loginView.classList.add('hidden');
+    panelView.classList.remove('hidden');
+    cargarPrecios();
+    cargarStats();
+  }
+  function mostrarLogin(){
+    panelView.classList.add('hidden');
+    loginView.classList.remove('hidden');
+  }
+
+  // ¿ya hay una sesión vigente? (por si recargó la página)
+  fetch('/.netlify/functions/session-check').then(function(r){return r.json();}).then(function(d){
+    if(d.logueado) mostrarPanel();
+  }).catch(function(){});
+
+  document.getElementById('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var err=document.getElementById('loginErr'); err.textContent='';
+    var d=new FormData(this);
+    fetch('/.netlify/functions/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({usuario:d.get('usuario'), clave:d.get('clave')})
+    }).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); })
+      .then(function(res){
+        if(!res.ok){ err.textContent = res.j.error || 'No se pudo iniciar sesión.'; return; }
+        mostrarPanel();
+      }).catch(function(){ err.textContent='No se pudo conectar con el servidor.'; });
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', function(){
+    fetch('/.netlify/functions/logout', {method:'POST'}).then(function(){ mostrarLogin(); });
+  });
+
+  // ---- precios ----
+  var UNIDADES = ['Cabaña Arroyo','Cabaña Lago','Cabaña Río','Depto 2','Depto 3','Depto 4','Depto 5','Depto 6','Depto 7','Depto 8','Oficina 1','Oficina 2'];
+
+  function cargarPrecios(){
+    var loading=document.getElementById('preciosLoading'), tabla=document.getElementById('preciosTable'), body=document.getElementById('preciosBody');
+    var err=document.getElementById('preciosErr'); err.textContent='';
+    fetch('/.netlify/functions/precios-get').then(function(r){
+      if(r.status===401){ mostrarLogin(); throw new Error('sesión vencida'); }
+      return r.json();
+    }).then(function(d){
+      var mapa={};
+      (d.precios||[]).forEach(function(p){ mapa[p.unidad]=p.precio; });
+      body.innerHTML='';
+      UNIDADES.forEach(function(u){
+        var tr=document.createElement('tr');
+        tr.innerHTML = '<td>'+u+'</td><td><input type="number" min="0" step="1" data-unidad="'+u+'" value="'+(mapa[u]||'')+'"></td>';
+        body.appendChild(tr);
+      });
+      loading.classList.add('hidden'); tabla.classList.remove('hidden');
+      document.getElementById('guardarPrecios').disabled=false;
+    }).catch(function(e){
+      if(e.message!=='sesión vencida'){ err.textContent='No se pudieron cargar los precios. Revisá que la planilla y las variables de entorno estén bien configuradas.'; loading.textContent='—'; }
+    });
+  }
+
+  document.getElementById('guardarPrecios').addEventListener('click', function(){
+    var btn=this, ok=document.getElementById('preciosOk'), err=document.getElementById('preciosErr');
+    ok.textContent=''; err.textContent=''; btn.disabled=true; btn.textContent='Guardando…';
+    var precios = Array.prototype.map.call(document.querySelectorAll('#preciosBody input'), function(inp){
+      return { unidad: inp.dataset.unidad, precio: inp.value };
+    });
+    fetch('/.netlify/functions/precios-set', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({precios:precios})
+    }).then(function(r){
+      if(r.status===401){ mostrarLogin(); throw new Error('sesión vencida'); }
+      return r.json().then(function(j){ return {ok:r.ok, j:j}; });
+    }).then(function(res){
+      btn.disabled=false; btn.textContent='Guardar precios';
+      if(!res.ok){ err.textContent=res.j.error || 'No se pudo guardar.'; return; }
+      ok.textContent='Precios guardados ✓';
+      setTimeout(function(){ ok.textContent=''; }, 3000);
+    }).catch(function(e){
+      btn.disabled=false; btn.textContent='Guardar precios';
+      if(e.message!=='sesión vencida') err.textContent='No se pudo conectar con el servidor.';
+    });
+  });
+
+  // ---- estadísticas ----
+  function cargarStats(){
+    var loading=document.getElementById('statsLoading'), content=document.getElementById('statsContent'), err=document.getElementById('statsErr');
+    err.textContent='';
+    fetch('/.netlify/functions/stats-get').then(function(r){
+      if(r.status===401){ mostrarLogin(); throw new Error('sesión vencida'); }
+      return r.json();
+    }).then(function(d){
+      ['visitas_total','visitas_30d','consultas_cabana_total','consultas_coworking_total'].forEach(function(k){
+        var el=document.getElementById('s_'+k); if(el) el.textContent = d[k] != null ? d[k] : '0';
+      });
+      var ul=document.getElementById('eventList'); ul.innerHTML='';
+      (d.ultimos_eventos||[]).forEach(function(ev){
+        var li=document.createElement('li');
+        var fecha = ev.fecha ? new Date(ev.fecha).toLocaleString('es-AR') : '';
+        li.innerHTML = '<b>'+(ev.tipo||'')+'</b><span>'+fecha+'</span><span>'+(ev.detalle||'')+'</span>';
+        ul.appendChild(li);
+      });
+      loading.classList.add('hidden'); content.classList.remove('hidden');
+    }).catch(function(e){
+      if(e.message!=='sesión vencida'){ err.textContent='No se pudieron cargar las estadísticas.'; loading.textContent='—'; }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1127,6 +1127,7 @@ dialog p{color:#EDE6D9;text-align:center;font-family:var(--serif);font-style:ita
   }
 
   function checkDisponibilidad(){
+    trackEvent('consulta_cabana', state.personas+' pers, '+state.llegadaISO+'→'+state.salidaISO);
     sayTyping(function(){
       var n=nights(state.llegadaISO,state.salidaISO);
       var opciones=[];
@@ -1174,6 +1175,18 @@ dialog p{color:#EDE6D9;text-align:center;font-family:var(--serif);font-style:ita
     sayTyping(function(){ say('Para ir más rápido, usá los botones de arriba 👆 (cuántas personas, y las fechas). Si preferís, escribime directamente por WhatsApp.'); setQuick([{label:'Escribir por WhatsApp',action:function(){window.open('https://wa.me/5491136841904','_blank','noopener');}},{label:'Empezar de nuevo',action:function(){start();}}]); });
   });
 })();
+</script>
+<script>
+// Seguimiento liviano: una visita por carga de página. No bloquea nada si falla.
+function trackEvent(tipo, detalle){
+  try{
+    fetch('/.netlify/functions/track', {
+      method:'POST', headers:{'Content-Type':'application/json'}, keepalive:true,
+      body: JSON.stringify({tipo:tipo, detalle:detalle||'', referrer:document.referrer||''})
+    }).catch(function(){});
+  }catch(e){}
+}
+trackEvent('pageview', location.pathname);
 </script>
 </body>
 </html>

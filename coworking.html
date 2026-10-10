@@ -528,6 +528,7 @@ dialog p{color:#EDE6D9;text-align:center;font-family:var(--serif);font-style:ita
   }
 
   function actualizarDispo(ini,fin){
+    trackEvent('consulta_coworking', ini+'→'+fin);
     state.desde=ini; state.hasta=fin;
     var libres=OFICINAS.filter(function(o){ return oficinaLibre(o,ini,fin); });
     dispo.hidden=false;
@@ -572,6 +573,17 @@ dialog p{color:#EDE6D9;text-align:center;font-family:var(--serif);font-style:ita
     window.open('https://wa.me/5491136841904?text=' + encodeURIComponent(t), '_blank', 'noopener');
   });
 })();
+</script>
+<script>
+function trackEvent(tipo, detalle){
+  try{
+    fetch('/.netlify/functions/track', {
+      method:'POST', headers:{'Content-Type':'application/json'}, keepalive:true,
+      body: JSON.stringify({tipo:tipo, detalle:detalle||'', referrer:document.referrer||''})
+    }).catch(function(){});
+  }catch(e){}
+}
+trackEvent('pageview', location.pathname);
 </script>
 </body>
 </html>
