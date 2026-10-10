@@ -1,4 +1,4 @@
-const { appendRow } = require('./_google');
+const { appendRow } = require('./_sheets');
 
 const TIPOS_VALIDOS = ['pageview', 'consulta_cabana', 'consulta_coworking'];
 
@@ -19,7 +19,6 @@ exports.handler = async function (event) {
   try {
     await appendRow('Estadisticas', [fecha, tipo, detalle, referrer]);
   } catch (e) {
-    // No queremos que un fallo acá rompa la experiencia del visitante.
     return { statusCode: 200, headers: cors(), body: JSON.stringify({ ok: false }) };
   }
   return { statusCode: 200, headers: cors(), body: JSON.stringify({ ok: true }) };

@@ -1,5 +1,5 @@
 const { sesionValida } = require('./_session');
-const { setRange } = require('./_google');
+const { setRows } = require('./_sheets');
 
 exports.handler = async function (event) {
   if (!sesionValida(event.headers)) {
@@ -16,7 +16,7 @@ exports.handler = async function (event) {
   }
   const filas = precios.map(p => [String(p.unidad || ''), String(p.precio || '')]);
   try {
-    await setRange(`Precios!A2:B${1 + filas.length}`, filas);
+    await setRows('Precios', 2, filas);
     return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ok: true }) };
   } catch (e) {
     return { statusCode: 500, body: JSON.stringify({ error: String(e.message || e) }) };

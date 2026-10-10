@@ -1,5 +1,5 @@
 const { sesionValida } = require('./_session');
-const { getRows } = require('./_google');
+const { getRows } = require('./_sheets');
 
 exports.handler = async function (event) {
   if (!sesionValida(event.headers)) {
