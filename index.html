@@ -1196,11 +1196,11 @@ trackEvent('pageview', location.pathname);
 // Mientras este link esté vacío, se quedan los precios fijos de arriba.
 // ============================================================
 (function(){
-  var PRECIOS_CSV_URL = '';
+  var PRECIOS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREGy0Y3zi_OvWMK3u69PZ0j5GsyIyP7kwjvWl74pzqWpwUmOLFD0I7aqp3SIk5PxRRRjonUrm6vwS9/pub?gid=1193960224&single=true&output=csv';
   if(!PRECIOS_CSV_URL) return;
 
   fetch(PRECIOS_CSV_URL).then(function(r){ return r.text(); }).then(function(txt){
-    var filas = txt.trim().split('\n').slice(1).map(function(line){
+    var filas = txt.replace(/\r/g,'').trim().split('\n').slice(1).map(function(line){
       var c = line.split(',').map(function(s){ return s.trim().replace(/^"|"$/g,''); });
       return { unidad: c[0], precio: c[1] };
     });
