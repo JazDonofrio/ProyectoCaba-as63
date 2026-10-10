@@ -404,7 +404,10 @@ dialog p{color:#EDE6D9;text-align:center;font-family:var(--serif);font-style:ita
         <label>Oficina<select name="oficina" id="cwOficina"><option>Me da igual</option><option>Oficina 1</option><option>Oficina 2</option></select></label>
         <label class="full">Comentarios<textarea name="msg" placeholder="Por ejemplo: necesito el escritorio desde el mediodía, voy a estar con otra persona…"></textarea></label>
         <p id="err" role="alert"></p>
-        <button class="btn" type="submit" id="cwSubmit">Enviar consulta por WhatsApp</button>
+        <div class="ctas" style="grid-column:1/-1">
+          <button class="btn" type="button" id="cwReservar">Reservar ahora</button>
+          <button class="btn ghost" type="submit" id="cwSubmit">Consultar por WhatsApp</button>
+        </div>
       </form>
     </div>
   </div>
@@ -450,6 +453,12 @@ dialog p{color:#EDE6D9;text-align:center;font-family:var(--serif);font-style:ita
   var SHEET_CSV_URL = '';
 
   var OFICINAS=['Oficina 1','Oficina 2'];
+  // IDs reales de cada oficina en Wix Hotels, para mandar a la reserva de esa unidad puntual
+  var ROOM_IDS={'Oficina 1':'d6ad1f29-107b-45e8-b722-5180d43c5ca3','Oficina 2':'af9640a6-9daa-468c-a516-89de29597f96'};
+  function urlReserva(oficina){
+    var id=ROOM_IDS[oficina];
+    return id ? 'https://www.ruta63.com.ar/book-a-room/rooms/'+id : 'https://www.ruta63.com.ar/book-a-room';
+  }
   var RESERVADO_DEMO=[ // datos de ejemplo
     {oficina:'Oficina 1', desde:'2027-01-10', hasta:'2027-01-17'}, // semana con solo la Oficina 2 libre
     {oficina:'Oficina 1', desde:'2027-01-20', hasta:'2027-01-24'}, // las dos oficinas completas
@@ -478,7 +487,7 @@ dialog p{color:#EDE6D9;text-align:center;font-family:var(--serif);font-style:ita
   var DOW=['L','M','M','J','V','S','D'];
 
   var state={};
-  var dispo=document.getElementById('cwDispo'), ofSel=document.getElementById('cwOficina'), submitBtn=document.getElementById('cwSubmit');
+  var dispo=document.getElementById('cwDispo'), ofSel=document.getElementById('cwOficina'), submitBtn=document.getElementById('cwSubmit'), reservarBtn=document.getElementById('cwReservar');
 
   function calendario(container,onConfirm){
     var wrap=document.createElement('div'); wrap.className='cal';
@@ -528,20 +537,25 @@ dialog p{color:#EDE6D9;text-align:center;font-family:var(--serif);font-style:ita
     if(libres.length===2){
       dispo.className='cw-dispo ok'; dispo.textContent='✅ Las dos oficinas están libres del '+rango+'.';
       ['Me da igual','Oficina 1','Oficina 2'].forEach(function(o){ var op=document.createElement('option'); op.textContent=o; ofSel.appendChild(op); });
-      submitBtn.disabled=false;
+      submitBtn.disabled=false; reservarBtn.disabled=false;
     } else if(libres.length===1){
       dispo.className='cw-dispo part'; dispo.textContent='Del '+rango+' solo queda libre la '+libres[0]+' (la otra ya está ocupada esas fechas).';
       var op=document.createElement('option'); op.textContent=libres[0]; ofSel.appendChild(op);
-      submitBtn.disabled=false;
+      submitBtn.disabled=false; reservarBtn.disabled=false;
     } else {
       dispo.className='cw-dispo none'; dispo.textContent='😕 Para ese rango las dos oficinas están ocupadas. Elegí otras fechas o escribinos para lista de espera.';
       var op2=document.createElement('option'); op2.textContent='—'; ofSel.appendChild(op2);
-      submitBtn.disabled=true;
+      submitBtn.disabled=true; reservarBtn.disabled=true;
     }
   }
 
   cargarReservas(function(){
     calendario(document.getElementById('cwCal'), actualizarDispo);
+  });
+
+  reservarBtn.addEventListener('click', function(){
+    var oficina = ofSel.value;
+    window.open(urlReserva(oficina), '_blank', 'noopener');
   });
 
   document.getElementById('f').addEventListener('submit', function(e){
