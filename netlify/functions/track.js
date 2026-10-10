@@ -6,6 +6,14 @@ exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method not allowed' };
   }
+
+  // Solo aceptamos pedidos que vengan realmente del sitio (no de cualquier script externo).
+  const origen = event.headers.origin || event.headers.referer || '';
+  const host = event.headers.host || '';
+  if (host && origen && !origen.includes(host)) {
+    return { statusCode: 403, headers: cors(), body: JSON.stringify({ error: 'origen no permitido' }) };
+  }
+
   let body;
   try { body = JSON.parse(event.body || '{}'); } catch (e) { body = {}; }
   const tipo = TIPOS_VALIDOS.includes(body.tipo) ? body.tipo : null;
@@ -25,5 +33,5 @@ exports.handler = async function (event) {
 };
 
 function cors() {
-  return { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+  return { 'Content-Type': 'application/json' };
 }
